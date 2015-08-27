@@ -101,7 +101,7 @@ Many of these helpers exist independently on npm, like:
 - [run-series](https://www.npmjs.com/package/run-series)
 - [map-limit](https://www.npmjs.com/package/map-limit)
 
-In many cases, such as when developing small modules<sup>[1](#small-modules)</sup>, this is a good solution. But in a larger scope, promises can provide a more unified and composable structure throughout your application.
+In many cases, such as when developing small modules<sup>[1](#promises-in-small-modules)</sup>, this is a good solution. But in a larger scope, promises can provide a more unified and composable structure throughout your application.
 
 ## promises
 
