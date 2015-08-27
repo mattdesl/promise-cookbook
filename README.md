@@ -26,7 +26,7 @@ This is a brief introduction to using Promises in JavaScript, primarily aimed at
 
 A Promise is a programming construct that can reduce some of the pains of asynchronous programming. Using Promises can help produce code that is leaner, easier to maintain, and easier to build on.
 
-This lesson will mostly focus on ES6 Promise syntax, but will use [Bluebird](https://github.com/petkaantonov/bluebird) since it provides excellent error handling in the browser. The CommonJS syntax will need a bundler like [browserify](https://github.com/substack/node-browserify) or [webpack](http://webpack.github.io/). See [lesson-module-basics](https://github.com/Jam3/jam3-lesson-module-basics) for further details on modules and CommonJS.
+This lesson will mostly focus on ES6 Promise syntax, but will use [Bluebird](https://github.com/petkaantonov/bluebird) since it provides excellent error handling in the browser. The CommonJS syntax will need a bundler like [browserify](https://github.com/substack/node-browserify) or [webpack](http://webpack.github.io/). See [jam3-lesson-module-basics](https://github.com/Jam3/jam3-lesson-module-basics) for an introduction to CommonJS and browserify.
 
 ## the problem
 
@@ -131,11 +131,11 @@ function loadImageAsync(url) {
 }
 ```
 
-The funtion returns a new instance of `Promise` which is *resolved* to `image` if the load succeeds, or *rejected* with a new `Error` if it fails. In our case we are using bluebird as our Promise implementation.
+The funtion returns a new instance of `Promise` which is *resolved* to `image` if the load succeeds, or *rejected* with a new `Error` if it fails. In our case, we `require('bluebird')` for the Promise implementation.
 
 The `Promise` constructor is typically only needed for edge cases like this, where we are converting a callback-style API into a promise-style API. In many cases it is preferable to use a `promisify` or `denodeify` utility which converts Node style (error-first) functions into their `Promise` counterpart.
 
-For example, the above becomes very concise with our earlier `loadImage` function:
+For example, the above becomes very concise with our [earlier `loadImage`](#the-problem) function:
 
 ```js
 var Promise = require('bluebird');
@@ -150,7 +150,7 @@ var loadImage = require('img');
 var loadImageAsync = Promise.promisify(loadImage);
 ```
 
-If you aren't using Bluebird, you can use [es6-denodeify](https://www.npmjs.com/package/es6-denodeify).
+If you aren't using Bluebird, you can use [es6-denodeify](https://www.npmjs.com/package/es6-denodeify) for this.
 
 ### `.then(resolved, rejected)`
 
@@ -165,7 +165,7 @@ loadImageAsync('one.png')
   });
 ```
 
-It takes two functions, either of which can be `null`. The `resolved` callback is called when the promise succeeds, and it is passed the resolved value (in this case `image`). The `rejected` callback is called when the promise fails, and it is passed the `Error` object we created earlier.
+`then` takes two functions, either of which can be `null` or undefined. The `resolved` callback is called when the promise succeeds, and it is passed the resolved value (in this case `image`). The `rejected` callback is called when the promise fails, and it is passed the `Error` object we created earlier.
 
 ### chaining
 
@@ -189,7 +189,8 @@ Your callbacks can return a value to pass it along to the next `.then()` method.
 
 ```js
 loadImageAsync('one.png')
-  .then(null, function(image) {
+  .then(null, function(err) {
+    console.warn(err.message);
     return notFoundImage;
   })
   .then(function(image) {
@@ -205,7 +206,8 @@ The cool thing is, you can return a `Promise` instance, and it will be resolved 
 
 ```js
 loadImageAsync('one.png')
-  .then(null, function(image) {
+  .then(null, function(err) {
+    console.warn(err.message);
     return loadImageAsync('not-found.png');
   })
   .then(function(image) {
@@ -219,7 +221,7 @@ The above tries to load `'one.png'`, but if that fails it will then load `'not-f
 
 ### `.catch(err)`
 
-You can also use `.catch()` to handle errors, which is the same as using `.then(null, handler)`.
+You can also use `.catch(func)` to handle errors, which is the same as using `.then(null, func)`.
 
 ```js
 loadImageAsync('one.png')
