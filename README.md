@@ -85,10 +85,10 @@ This tends to create a "Christmas Tree" of functions; and leads to code that is 
 One way to solve the problem is with [async](https://github.com/caolan/async) and similar abstractions:
 
 ```js
-var async = require('async');
+var mapAsync = require('async').map;
 
 var urls = [ 'one.png', 'two.png' ];
-async.map(urls, loadImage, function(err, images) {
+mapAsync(urls, loadImage, function(err, images) {
   if (err) throw err;
   console.log('All images loaded', images);
 });
