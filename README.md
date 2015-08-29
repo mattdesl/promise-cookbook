@@ -334,7 +334,12 @@ Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Pr
 
 Although this guide uses [bluebird](https://github.com/petkaantonov/bluebird), it should work in any standard Promise implementation. For example, using [Babel](https://babeljs.io/docs/learn-es2015/#promises).
 
-Another option is [es6-promise](https://www.npmjs.com/package/es6-promise), which might be used like so in Node/browser:
+Some other implementations: 
+
+- [pinkie-promise](https://github.com/floatdrop/pinkie-promise)
+- [es6-promise](https://www.npmjs.com/package/es6-promise)
+
+For example, in Node/browser:
 
 ```js
 // use native promise if it exists
@@ -367,4 +372,4 @@ var xhrAsync = Promise.promisify(require('xhr'))
 
 ## License
 
-MIT, see [LICENSE.md](http://github.com/Jam3/jam3-lesson-promises/blob/master/LICENSE.md) for details.
+MIT, see [LICENSE.md](http://github.com/mattdesl/promise-cookbook/blob/master/LICENSE.md) for details.
