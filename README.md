@@ -6,7 +6,7 @@ This is a brief introduction to using Promises in JavaScript, primarily aimed at
 
 - [intro](#intro)
 - [the problem](#the-problem)
-- [async](#async)
+- [`async`](#async)
 - [promises](#promises)
   - [`new Promise()`](#new-promise)
   - [`.then(resolved, rejected)`](#thenresolved-rejected)
@@ -19,8 +19,11 @@ This is a brief introduction to using Promises in JavaScript, primarily aimed at
 - [common patterns](#common-patterns)
   - [memoization](#memoization)
   - [`Promise.resolve` / `Promise.reject`](#promiseresolve--promisereject)
-- [`Promise` in ES2015](#promise-in-es2015)
-- [promises in small modules](#promises-in-small-modules)
+  - [`Promise` in ES2015](#promise-in-es2015)
+- [pitfalls](#pitfalls)
+  - [promises in small modules](#promises-in-small-modules)
+  - [complexity](#complexity)
+  - [lock-in](#lock-in)
 - [further reading](#further-reading)
 
 ## intro
@@ -105,9 +108,9 @@ Similar abstractions exist independently on npm, such as:
 - [run-waterfall](https://www.npmjs.com/package/run-waterfall)
 - [map-limit](https://www.npmjs.com/package/map-limit)
 
-This approach is very powerful. It's [a great fit for small modules](#promises-in-small-modules) as it does not introduce additional bloat or vendor lock-in. It also does not have the pitfalls of error handling as discussed in the [implicit catch](#throw-and-implicit-catch) section.
+This approach is very powerful. It's [a great fit for small modules](#promises-in-small-modules) as it does not introduce additional bloat or vendor lock-in, and does not have some of the other [pitfalls of promises](#pitfalls).
 
-However, in a larger scope, promises can provide a unified and composable structure throughout your application. They will also lay the groundwork for [ES7 async/await](https://jakearchibald.com/2014/es7-async-functions/), so it is important to have a strong grasp on how they work.
+However, in a larger scope, promises can provide a unified and composable structure throughout your application. They will also lay the groundwork for [ES7 async/await](https://jakearchibald.com/2014/es7-async-functions/).
 
 ## promises
 
@@ -363,7 +366,7 @@ thumbnail.then(function(image) {
 
 Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Promise.resolve` we can treat `thumbnail` the same even if it doesn't involve a database query.
 
-## `Promise` in ES2015
+### `Promise` in ES2015
 
 Although this guide uses [bluebird](https://github.com/petkaantonov/bluebird), it should work in any standard Promise implementation. For example, using [Babel](https://babeljs.io/docs/learn-es2015/#promises).
 
@@ -380,15 +383,19 @@ For example, in Node/browserify:
 var Promise = global.Promise || require('es6-promise').Promise;
 ```
 
-## promises in small modules
+## pitfalls
 
-When you begin to use promises, it may be tempting to use them for *all* asynchronous code. However, one situation where you may want to question the use of promises is in small, self-contained [npm](https://www.npmjs.com/) modules.
+In addition to the the issues mentioned in [`throw` and implicit catch](#throw-and-implicit-catch), there are some other problems to keep in mind when choosing promises. Some developers choose not to use promises for these reasons.
+
+### promises in small modules
+
+One sitaution where promises are not yet a good fit is in small, self-contained [npm](https://www.npmjs.com/) modules.
 
 - Depending on `bluebird` or `es6-promise` is a form of vendor lock-in. It can be a problem for frontend developers, where bundle size is a constraint. 
 - Expecting the native `Promise` (ES2015) constructor is also a problem, since it creates a peer dependency on these polyfills.
 - Mixing different promise implementations across modules may lead to subtle bugs and debugging irks.
 
-Until native Promise support is widespread, it is often easier to use Node-style callbacks and independent [async modules](#async) for control flow. 
+Until native Promise support is widespread, it is often easier to use Node-style callbacks and independent [async modules](#async) for control flow and smaller bundle size. 
 
 Consumers can then "promisify" your API with their favourite implementation. For example, using the [xhr](https://www.npmjs.com/package/xhr) module in Bluebird might look like this: 
 
@@ -396,6 +403,16 @@ Consumers can then "promisify" your API with their favourite implementation. For
 var Promise = require('bluebird')
 var xhrAsync = Promise.promisify(require('xhr'))
 ```
+
+### complexity
+
+Promises can introduce a lot of complexity and mental overhead into a codebase (evident by the need for this guide). In real-world projects, developers will often work with promise-based code without fully understanding how promises work.
+
+See Nolan Lawson's ["We Have a Problem With Promises"](http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html) for an example of this.
+
+### lock-in
+
+Another frustration is that promises tend to work best once *everything* in your codebase is using them. In practice, you might find yourself refactoring and "promisifying" a lot of code before you can reap the benefits of promises. It also means that new code must be written with promises in mind — you are now stuck with them!
 
 ## further reading
 
