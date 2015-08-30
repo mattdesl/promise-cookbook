@@ -15,6 +15,7 @@ This is a brief introduction to using Promises in JavaScript, primarily aimed at
   - [`.catch(err)`](#catcherr)
   - [`Promise.all()`](#promiseall)
   - [passing the buck](#passing-the-buck)
+  - [`throw` and implicit catch](#throw-and-implicit-catch)
 - [common patterns](#common-patterns)
   - [memoization](#memoization)
   - [`Promise.resolve` / `Promise.reject`](#promiseresolve--promisereject)
@@ -82,7 +83,9 @@ This tends to create a "Christmas Tree" of functions; and leads to code that is 
 
 ## async
 
-One way to solve the problem is with [async](https://github.com/caolan/async) and similar abstractions:
+There are numerous abstractions built around the error-first callbacks, sometimes called "errbacks."
+
+One way to solve the problem is with the [async](https://github.com/caolan/async) module:
 
 ```js
 var mapAsync = require('async').map;
@@ -94,14 +97,17 @@ mapAsync(urls, loadImage, function(err, images) {
 });
 ```
 
-Many of these helpers exist independently on npm, like:
+Similar abstractions exist independently on npm, such as:
 
 - [async-each](https://www.npmjs.com/package/async-each)
 - [async-each-series](https://www.npmjs.com/package/async-each-series)
 - [run-series](https://www.npmjs.com/package/run-series)
+- [run-waterfall](https://www.npmjs.com/package/run-waterfall)
 - [map-limit](https://www.npmjs.com/package/map-limit)
 
-In many cases, such as when developing small modules<sup>[1](#promises-in-small-modules)</sup>, this is a good solution. But in a larger scope, promises can provide a more unified and composable structure throughout your application.
+This approach is very powerful. It's [a great fit for small modules](#promises-in-small-modules) as it does not introduce additional bloat or vendor lock-in. It also does not have the pitfalls of error handling as discussed in the [implicit catch](#throw-and-implicit-catch) section.
+
+However, in a larger scope, promises can provide a unified and composable structure throughout your application. They will also lay the groundwork for [ES7 async/await](https://jakearchibald.com/2014/es7-async-functions/), so it is important to have a strong grasp on how they work.
 
 ## promises
 
@@ -288,6 +294,33 @@ showUserImages('mattdesl')
   });
 ```
 
+### `throw` and implicit catch
+
+If you `throw` inside your promise chain, the error will be impliticly caught by the underlying Promise implementation and treated as a call to `reject(err)`. 
+
+In the following example, if the user has not activated their account, the promise will be rejected and the `showError` method will be called.
+
+```js
+loadUser()
+  .then(function (user) {
+    if (!user.activated) {
+      throw new Error('user has not activated their account');
+    }
+    return showUserGallery(user);
+  })
+  .then(null, function (err) {
+    showError(err.message);
+  });
+```
+
+This part of the specification is often viewed as a pitfall of promises. It conflates the semantics of error handling by combining syntax errors, programmer error (e.g. invalid parameters), and connection errors into the same logic. 
+
+It leads to frustrations during browser development: you might lose debugger capabilities, stack traces, and source map details.
+
+![debugging](http://i.imgur.com/Y6RH8ke.png)
+
+For many developers, this is enough reason to eschew promises in favour of error-first callbacks and abstractions like [async](#async).
+
 ## common patterns
 
 ### memoization
@@ -339,7 +372,7 @@ Some other implementations:
 - [pinkie-promise](https://github.com/floatdrop/pinkie-promise)
 - [es6-promise](https://www.npmjs.com/package/es6-promise)
 
-For example, in Node/browser:
+For example, in Node/browserify:
 
 ```js
 // use native promise if it exists
