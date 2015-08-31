@@ -176,16 +176,33 @@ loadImageAsync('one.png')
 
 `then` takes two functions, either of which can be `null` or undefined. The `resolved` callback is called when the promise succeeds, and it is passed the resolved value (in this case `image`). The `rejected` callback is called when the promise fails, and it is passed the `Error` object we created earlier.
 
+### `.catch(err)`
+
+Promises also have a `.catch(func)` to handle errors, which is the same as `.then(null, func)` but provides clearer intent.
+
+```js
+loadImageAsync('one.png')
+  .catch(function(err) {
+    console.error('Could not load image', err);
+  });
+```
+
 ### chaining
 
-The `.then()` method *always returns a Promise*, which means it can be chained. The above could be re-written like so, where the second callback handles any errors in the promise before it:
+The `.then()` method *always returns a Promise*, which means it can be chained. The above could be re-written like so. If a promise is rejected, the next `catch()` or `then(null, rejected)` will be called.
+
+In the following example, if the `loadImageAsync` method is rejected, the only output to the console will be the error message.
 
 ```js
 loadImageAsync('one.png')
   .then(function(image) {
     console.log('Image loaded', image);
+    return { width: image.width, height: image.height };
   })
-  .then(null, function(err) {
+  .then(function(size) {
+    console.log('Image size:', size);
+  })
+  .catch(function(err) {
     console.error('Error in promise chain', err);
   });
 ```
@@ -194,18 +211,16 @@ In general, you should be wary of long promise chains. They can be difficult to 
 
 ### resolving values
 
-Your callbacks can return a value to pass it along to the next `.then()` method. For example:
+Your `then()` and `catch()` callbacks can return a value to pass it along to the next method in the chain. For example, here we resolve errors to a default image:
 
 ```js
 loadImageAsync('one.png')
-  .then(null, function(err) {
+  .catch(function(err) {
     console.warn(err.message);
     return notFoundImage;
   })
   .then(function(image) {
     console.log('Resolved image', image);
-  }, function(err) {
-    console.error('Could not find any images', err);
   });
 ```
 
@@ -215,32 +230,19 @@ The cool thing is, you can return a `Promise` instance, and it will be resolved 
 
 ```js
 loadImageAsync('one.png')
-  .then(null, function(err) {
+  .catch(function(err) {
     console.warn(err.message);
     return loadImageAsync('not-found.png');
   })
   .then(function(image) {
     console.log('Resolved image', image);
-  }, function(err) {
-    console.error('Could not find any images', err);
-  });
-```
-
-The above tries to load `'one.png'`, but if that fails it will then load `'not-found.png'`, and only then would it resolve to the image.
-
-### `.catch(err)`
-
-You can also use `.catch(func)` to handle errors, which is the same as using `.then(null, func)`.
-
-```js
-loadImageAsync('one.png')
-  .then(function(image) {
-    console.log('Loaded image', image);
-  });
+  })
   .catch(function(err) {
-    console.error('Could not load image', err);
+    console.error('Could not load any images', err);
   });
 ```
+
+The above tries to load `'one.png'`, but if that fails it will then load `'not-found.png'`.
 
 ### `Promise.all()`
 
@@ -288,7 +290,8 @@ function getUserImages(user) {
 
 function showUserImages(user) {
   return getUserImages(user)
-    .then(renderGallery, renderEmptyGallery);
+    .then(renderGallery)
+    .catch(renderEmptyGallery);
 }
 
 showUserImages('mattdesl')
@@ -305,13 +308,13 @@ In the following example, if the user has not activated their account, the promi
 
 ```js
 loadUser()
-  .then(function (user) {
+  .then(function(user) {
     if (!user.activated) {
       throw new Error('user has not activated their account');
     }
     return showUserGallery(user);
   })
-  .then(null, function (err) {
+  .catch(function(err) {
     showError(err.message);
   });
 ```
