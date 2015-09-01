@@ -19,6 +19,7 @@ This is a brief introduction to using Promises in JavaScript, primarily aimed at
 - [common patterns](#common-patterns)
   - [memoization](#memoization)
   - [`Promise.resolve` / `Promise.reject`](#promiseresolve--promisereject)
+  - [handling user errors](#handling-user-errors)
   - [`Promise` in ES2015](#promise-in-es2015)
 - [pitfalls](#pitfalls)
   - [promises in small modules](#promises-in-small-modules)
@@ -368,6 +369,40 @@ thumbnail.then(function(image) {
 ```
 
 Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Promise.resolve` we can treat `thumbnail` the same even if it doesn't involve a database query.
+
+### handling user errors
+
+Functions that return new promises, such as our earlier [`loadImageAsync`](#new-promise), should *always* return promises.
+
+Instead of throwing errors on invalid user arguments, you should return a promise that rejects with an error. [Promise.reject()](#promiseresolve--promisereject) can be convenient here:
+
+```js
+function loadImageAsync(url) {
+  if (typeof url !== 'string') {
+    return Promise.reject(new TypeError('must specify a string'));
+  }
+
+  return new Promise(function (resolve, reject) {
+    /* async code */
+  });
+}
+```
+
+Alternatively, you could use `throw` inside the promise function:
+
+```js
+function loadImageAsync(url) {
+  return new Promise(function (resolve, reject) {
+    if (typeof url !== 'string') {
+      throw new TypeError('must specify a string');
+    }
+
+    /* async code */
+  });
+}
+```
+
+See [here](https://www.w3.org/2001/tag/doc/promises-guide#always-return-promises) for details.
 
 ### `Promise` in ES2015
 
