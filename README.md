@@ -372,7 +372,7 @@ Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Pr
 
 ### handling user errors
 
-Functions that return promises should *always* return promises, so the user does not need to `try/catch`.
+Functions that return promises should *always* return promises, so the user does not need to wrap them in a `try/catch` block.
 
 Instead of throwing errors on invalid user arguments, you should return a promise that rejects with an error. [Promise.reject()](#promiseresolve--promisereject) can be convenient here.
 
