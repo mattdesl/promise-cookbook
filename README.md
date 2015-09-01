@@ -372,9 +372,11 @@ Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Pr
 
 ### handling user errors
 
-Functions that return new promises, such as our earlier [`loadImageAsync`](#new-promise), should *always* return promises.
+Functions that return new promises should *always* return promises.
 
-Instead of throwing errors on invalid user arguments, you should return a promise that rejects with an error. [Promise.reject()](#promiseresolve--promisereject) can be convenient here:
+So, instead of throwing errors on invalid user arguments, you should return a promise that rejects with an error. [Promise.reject()](#promiseresolve--promisereject) can be convenient here.
+
+For example, using our earlier [`loadImageAsync`](#new-promise).
 
 ```js
 function loadImageAsync(url) {
