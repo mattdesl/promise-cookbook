@@ -2,6 +2,8 @@
 
 This is a brief introduction to using Promises in JavaScript, primarily aimed at frontend developers.
 
+<sup>See [here](./README.zh.md) for a Chinese translation.</sup>
+
 ## contents
 
 - [intro](#intro)
