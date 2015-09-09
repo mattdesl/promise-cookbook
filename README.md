@@ -141,7 +141,7 @@ function loadImageAsync(url) {
 }
 ```
 
-The funtion returns a new instance of `Promise` which is *resolved* to `image` if the load succeeds, or *rejected* with a new `Error` if it fails. In our case, we `require('bluebird')` for the Promise implementation.
+The function returns a new instance of `Promise` which is *resolved* to `image` if the load succeeds, or *rejected* with a new `Error` if it fails. In our case, we `require('bluebird')` for the Promise implementation.
 
 The `Promise` constructor is typically only needed for edge cases like this, where we are converting a callback-style API into a promise-style API. In many cases it is preferable to use a `promisify` or `denodeify` utility which converts Node style (error-first) functions into their `Promise` counterpart.
 
