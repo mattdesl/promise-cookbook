@@ -15,17 +15,17 @@
   - [resolving values](#resolving-values)
   - [`Promise.all()`](#promiseall)
   - [passing the buck](#passing-the-buck)
-  - [`throw` and implicit catch](#throw-and-implicit-catch)
-- [common patterns](#common-patterns)
+  - [`throw` 和隐式 catch](#throw 和隐式 catch)
+- [常见模式](#常见模式)
   - [memoization](#memoization)
   - [`Promise.resolve` / `Promise.reject`](#promiseresolve--promisereject)
   - [handling user errors](#handling-user-errors)
-  - [`Promise` in ES2015](#promise-in-es2015)
+  - [ES2015 中的 `Promise`](#ES2015 中的 `Promise`)
 - [陷阱](#陷阱)
   - [小模块中的 promise](#小模块中的 promise)
-  - [complexity](#complexity)
+  - [复杂性](#复杂性)
   - [lock-in](#lock-in)
-- [further reading](#further-reading)
+- [延伸阅读](#延伸阅读)
 
 ## 简介
 
@@ -253,9 +253,9 @@ loadImageAsync('one.png')
 
 ### `Promise.all()`
 
-Let's go back to our original task of loading multiple images.
+回到最开始的载入多个图片的问题。
 
-The `Promise.all()` method accepts an array of values or promises and returns a new `Promise` that is only resolved once *all* the promises are resolved. Here we map each URL to a new Promise using `loadImageAsync`, and then pass those promises to `all()`.
+`Promise.all()` 方法接受的参数可以是数组，或者是 promise 对象，并返回一个新的 `Promise` 对象，这个新的 `Promise` 对象只会在*所有* promise 对象进入 resolve 状态后变成 resolve 的。下面我们用 `loadImageAsync` 把每个 URL 映射为一个新的 promise 对象，然后传递给 `all()`。
 
 ```js
 var urls = ['one.png', 'two.png', 'three.png'];
@@ -270,13 +270,13 @@ Promise.all(promises)
   });
 ```
 
-Finally, things are starting to look a bit cleaner.
+这样，加载多个图片的代码看起来要清晰一些了。
 
 ### passing the buck
 
-You may still be wondering where promises improve on the `async` approach. The real benefits come from composing promises across your application.
+你可能想知道 promise 风格的解决方法与 `async` 方式相比优势在哪。当你需要组合多个 promise 时，你就能体会它的优势了。
 
-We can "pass the buck" by making named functions that return promises, and let errors bubble upstream. The above code would look like this:
+我们可以声明多个返回 promise 的具名函数，并且让错误信息冒泡到上层函数。上面的代码可以改写为这样：
 
 ```js
 function loadImages(urls) {
@@ -285,7 +285,7 @@ function loadImages(urls) {
 }
 ```
 
-A more complex example might look like this:
+更复杂的例子会像这样：
 
 ```js
 function getUserImages(user) {
@@ -307,11 +307,11 @@ showUserImages('mattdesl')
   });
 ```
 
-### `throw` and implicit catch
+### `throw` 和隐式 catch
 
-If you `throw` inside your promise chain, the error will be impliticly caught by the underlying Promise implementation and treated as a call to `reject(err)`. 
+如果在 promise 链中 `throw` ，错误会被 Promise 底层代码隐式地 catch，并调用 `reject(err)`。
 
-In the following example, if the user has not activated their account, the promise will be rejected and the `showError` method will be called.
+在下面的例子中，如果用户没有激活他的账号，promise 将会被 rejected，并且 `showError` 方法将会被调用。
 
 ```js
 loadUser()
@@ -326,19 +326,20 @@ loadUser()
   });
 ```
 
-This part of the specification is often viewed as a pitfall of promises. It conflates the semantics of error handling by combining syntax errors, programmer error (e.g. invalid parameters), and connection errors into the same logic. 
+Promise 标准的这部分经常被视为它的一个陷阱。
+它把所有错误处理的语义混淆了。语法错误，编码者错误（比如非法参数），和连接错误被糅合到相同的逻辑里去了。
 
-It leads to frustrations during browser development: you might lose debugger capabilities, stack traces, and source map details.
+这会给浏览器端开发带来麻烦：你可能无法调试，无法追查（你想要看到的）调用栈。
 
 ![debugging](http://i.imgur.com/Y6RH8ke.png)
 
-For many developers, this is enough reason to eschew promises in favour of error-first callbacks and abstractions like [async](#async).
+对大多数开发者来说，就这个理由就足以让他们抛弃 promise 回归 error-first 回调风格和类似 [async](#async) 这样的工具.
 
-## common patterns
+## 常见模式
 
 ### memoization
 
-We can use `.then()` on a promise even after the asynchronous task is long complete. For example, instead of always requesting the same `'not-found.png'` image, we can cache the result of the first request and just resolve to the same `Image` object.
+我们在异步任务完成后使用 `.then()`。比如，我们可以缓存第一次请求的结果，resolve 同一个 `Image` 对象，而不是每次都请求同样的 `'not-found.png'` 图片。
 
 ```js
 var notFound;
@@ -352,37 +353,37 @@ function getNotFoundImage() {
 }
 ```
 
-This is more useful for server requests, since the browser already has a caching layer in place for image loading.
+这在服务端可能更有用，因为浏览器已经有缓存机制。
 
 ### `Promise.resolve` / `Promise.reject`
 
-The `Promise` class also provides a `resolve` and `reject` method. When called, these will return a new promise that resolves or rejects to the (optional) value given to them.
+`Promise` 本身也提供 `resolve` 和 `reject` 方法。调用它们时，将会返回一个新的 promise，这个新的 promise 已经是 resolved 或 rejected 状态。
 
-For example:
+举个例子:
 
 ```js
 var thumbnail = Promise.resolve(defaultThumbnail);
 
-//query the DB
+// 查询数据库
 if (userLoggedIn) {
   thumbnail = loadUserThumbnail();
 }
 
-//add the image to the DOM when it's ready
+// 当 DOM 是 ready 状态时，添加图片到 DOM
 thumbnail.then(function(image) {
   document.body.appendChild(image);
 });
 ```
 
-Here `loadUserThumbnail` returns a `Promise` that resolves to an image. With `Promise.resolve` we can treat `thumbnail` the same even if it doesn't involve a database query.
+这里的 `loadUserThumbnail` 返回一个 `Promise`，并可以从中取到一个图片。有了 `Promise.resolve`，即使我们不去进行查询数据库的操作，也同样可以获得一个 `Promise`，并且不需要改动后面的代码。
 
 ### handling user errors
 
-Functions that return promises should *always* return promises, so the user does not need to wrap them in a `try/catch` block.
+返回 promise 的函数应该*总是*返回 promise，这样使用它的时候就不需要用 `try/catch` 包裹这些函数。
 
-Instead of throwing errors on invalid user arguments, you should return a promise that rejects with an error. [Promise.reject()](#promiseresolve--promisereject) can be convenient here.
+在出现错误是，你应该使用 reject 返回错误，而不是抛出一个错误。[Promise.reject()](#promiseresolve--promisereject) 在这种场景下非常好用。
 
-For example, using our earlier [`loadImageAsync`](#new-promise):
+举个例子，这里用到了早先定义的 [`loadImageAsync`](#new-promise):
 
 ```js
 function loadImageAsync(url) {
@@ -396,7 +397,7 @@ function loadImageAsync(url) {
 }
 ```
 
-Alternatively, you could use `throw` inside the promise function:
+或者可以在 promise 函数内部使用 `throw`：
 
 ```js
 function loadImageAsync(url) {
@@ -410,62 +411,63 @@ function loadImageAsync(url) {
 }
 ```
 
-See [here](https://www.w3.org/2001/tag/doc/promises-guide#always-return-promises) for details.
+点击[这里](https://www.w3.org/2001/tag/doc/promises-guide#always-return-promises) 可以了解更多细节。
 
-### `Promise` in ES2015
+### ES2015 中的 `Promise`
 
-Although this guide uses [bluebird](https://github.com/petkaantonov/bluebird), it should work in any standard Promise implementation. For example, using [Babel](https://babeljs.io/docs/learn-es2015/#promises).
+尽管本文使用了 [bluebird](https://github.com/petkaantonov/bluebird)，但上述也同样适用于标准的 Promise 实现。比如，[Babel](https://babeljs.io/docs/learn-es2015/#promises) 中的 Promise。
 
-Some other implementations: 
+一些其它的实现：
 
 - [pinkie-promise](https://github.com/floatdrop/pinkie-promise)
 - [es6-promise](https://www.npmjs.com/package/es6-promise)
 
-For example, in Node/browserify:
+举个例子，在 Node/browserify 中：
 
 ```js
-// use native promise if it exists
-// otherwise fall back to polyfill
+// 使用原生 promise ，如果不存在否则使用 polyfill
 var Promise = global.Promise || require('es6-promise').Promise;
 ```
 
-## pitfalls
+## 陷阱
 
-In addition to the the issues mentioned in [`throw` and implicit catch](#throw-and-implicit-catch), there are some other problems to keep in mind when choosing promises. Some developers choose not to use promises for these reasons.
+除了 [`throw` 和隐式 catch](#`throw` 和隐式 catch) 这个陷阱，还有一些问题值得注意。
 
-### promises in small modules
+### 小模块中的 promise
 
-One sitaution where promises are not yet a good fit is in small, self-contained [npm](https://www.npmjs.com/) modules.
+有一个不适合使用 promise 的场景，就是它不适合加进一些独立、小巧的 [npm](https://www.npmjs.com/) 模块。
 
-- Depending on `bluebird` or `es6-promise` is a form of vendor lock-in. It can be a problem for frontend developers, where bundle size is a constraint. 
-- Expecting the native `Promise` (ES2015) constructor is also a problem, since it creates a peer dependency on these polyfills.
-- Mixing different promise implementations across modules may lead to subtle bugs and debugging irks.
+- 当打包大小有限制时，依赖 `bluebird` 或 `es6-promise` 占用一些空间。
+- 使用 `Promise` (ES2015) 构造器也会有问题，因为它引入了对那些 polyfill 的依赖。
+- 跨模块地混合使用不同的 promise 实现会导致一些微妙的 bug，调试时让人受尽折磨。
 
-Until native Promise support is widespread, it is often easier to use Node-style callbacks and independent [async modules](#async) for control flow and smaller bundle size. 
+除非原生 Promise 普及，在小模块中，建议使用 Node 风格的回调和独立的 [async](#async) 模块来控制异步任务。
 
-Consumers can then "promisify" your API with their favourite implementation. For example, using the [xhr](https://www.npmjs.com/package/xhr) module in Bluebird might look like this: 
+你可以使用任何一张你喜欢的 Promise 实现去 "promise 化"你的 API。比如，在 Bluebird 下使用 [xhr](https://www.npmjs.com/package/xhr) 模块：
 
 ```js
 var Promise = require('bluebird')
 var xhrAsync = Promise.promisify(require('xhr'))
 ```
 
-### complexity
+### 复杂性
 
-Promises can introduce a lot of complexity and mental overhead into a codebase (evident by the need for this guide). In real-world projects, developers will often work with promise-based code without fully understanding how promises work.
+Promises 引入了很多的复杂性和额外的智力开销。在实际项目中，开发者经常要面对基于 promise 的代码，但不完全明白 promise 内里的机制。
 
-See Nolan Lawson's ["We Have a Problem With Promises"](http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html) for an example of this.
+请看 Nolan Lawson 的 ["We Have a Problem With Promises"](http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html) 一文，里面给出了很多种 promise 的错误用法。
 
 ### lock-in
 
-Another frustration is that promises tend to work best once *everything* in your codebase is using them. In practice, you might find yourself refactoring and "promisifying" a lot of code before you can reap the benefits of promises. It also means that new code must be written with promises in mind — you are now stuck with them!
+另一个令人沮丧的事实是，一旦你用了 promise，你就得在整个项目中使用它，以确保它能完美运行。
+在实践中，你会发现，想要获得 promise 的诸多益处，需要先重构并 “promise 化” 很多代码。
+这也意味着，写新的代码时必须以 promise 的方式思考——你会被这种思维方式折磨的，如果不熟练的话。
 
-## further reading
+## 延伸阅读
 
 - [JavaScript Promises: There and back again](http://www.html5rocks.com/en/tutorials/es6/promises/)
 - [We Have a Problem With Promises](http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
 - [You're Missing the Point of Promises](https://blog.domenic.me/youre-missing-the-point-of-promises/)
 
-## License
+## 协议
 
-MIT, see [LICENSE.md](http://github.com/mattdesl/promise-cookbook/blob/master/LICENSE.md) for details.
+MIT，请看 [LICENSE.md](http://github.com/mattdesl/promise-cookbook/blob/master/LICENSE.md) 。
