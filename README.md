@@ -431,7 +431,7 @@ In addition to the the issues mentioned in [`throw` and implicit catch](#throw-a
 
 ### promises in small modules
 
-One sitaution where promises are not yet a good fit is in small, self-contained [npm](https://www.npmjs.com/) modules.
+One situation where promises are not yet a good fit is in small, self-contained [npm](https://www.npmjs.com/) modules.
 
 - Depending on `bluebird` or `es6-promise` is a form of vendor lock-in. It can be a problem for frontend developers, where bundle size is a constraint. 
 - Expecting the native `Promise` (ES2015) constructor is also a problem, since it creates a peer dependency on these polyfills.
