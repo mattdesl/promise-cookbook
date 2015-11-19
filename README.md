@@ -458,6 +458,8 @@ Another frustration is that promises tend to work best once *everything* in your
 
 ## further reading
 
+For a comprehensive list of Promise resources and small modules to avoid library lock-in, check out [Awesome Promises](https://github.com/wbinnssmith/awesome-promises).
+
 - [JavaScript Promises: There and back again](http://www.html5rocks.com/en/tutorials/es6/promises/)
 - [We Have a Problem With Promises](http://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
 - [You're Missing the Point of Promises](https://blog.domenic.me/youre-missing-the-point-of-promises/)
