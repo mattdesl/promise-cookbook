@@ -119,7 +119,7 @@ However, in a larger scope, promises can provide a unified and composable struct
 
 Let's re-implement the above with promises for our control flow. At first this may seem like more overhead, but the benefits will become clear shortly.
 
-### `new Promise()`
+### `new Promise(function(resolve, reject) { ... })`
 
 Below is how the image loading function would be implemented with promises. We'll call it `loadImageAsync` to distinguish it from the earlier example.
 
